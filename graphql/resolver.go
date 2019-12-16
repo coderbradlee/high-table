@@ -27,7 +27,7 @@ func (r *Resolver) Query() QueryResolver {
 type queryResolver struct{ *Resolver }
 
 // Delegate handles delegate requests
-func (r *queryResolver) Delegate(ctx context.Context, epochNum int, groupID int) ([]*Delegate, error) {
+func (r *queryResolver) Delegates(ctx context.Context, epochNum int, groupID int) ([]*Delegate, error) {
 	return r.getDelegates(ctx, epochNum, groupID)
 }
 
@@ -50,6 +50,22 @@ func (r *queryResolver) getDelegates(ctx context.Context, epochNum int, groupID 
 		})
 	}
 	return
+}
+
+// Delegate handles delegate requests
+func (r *queryResolver) UpdateDelegate(ctx context.Context, delegate InputDelegate) (bool, error) {
+	input := &api.Delegate{
+		EpochNumber:    delegate.EpochNumber,
+		DelegateID:     delegate.DelegateID,
+		DelegateName:   delegate.DelegateName,
+		DelegateNodeid: delegate.DelegateNodeid,
+		GroupID:        delegate.GroupID,
+		GroupName:      delegate.GroupName,
+		ConsensusType:  delegate.ConsensusType,
+		MaxTransNum:    delegate.MaxTransNum,
+		GasLimit:       delegate.GasLimit,
+	}
+	return r.Cli.UpdateDelegates(input)
 }
 
 //func containField(requestedFields []string, field string) bool {
