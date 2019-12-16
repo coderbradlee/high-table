@@ -62,6 +62,12 @@ func main() {
 	}
 
 	store := sql.NewMySQL(cfg.Connection, cfg.DBName)
+	err = store.Start(context.Background())
+	if err != nil {
+		log.S().Error("store.Start", zap.Error(err))
+		return
+	}
+
 	delegates := api.NewProtocol(store)
 	err = delegates.CreateTables(context.Background())
 	if err != nil {
