@@ -57,13 +57,13 @@ func (r *queryResolver) UpdateDelegate(ctx context.Context, delegate InputDelega
 	input := &api.Delegate{
 		EpochNumber:    delegate.EpochNumber,
 		DelegateID:     delegate.DelegateID,
-		DelegateName:   delegate.DelegateName,
-		DelegateNodeid: delegate.DelegateNodeid,
+		DelegateName:   *delegate.DelegateName,
+		DelegateNodeid: *delegate.DelegateNodeid,
 		GroupID:        delegate.GroupID,
-		GroupName:      delegate.GroupName,
-		ConsensusType:  delegate.ConsensusType,
-		MaxTransNum:    delegate.MaxTransNum,
-		GasLimit:       delegate.GasLimit,
+		GroupName:      *delegate.GroupName,
+		ConsensusType:  *delegate.ConsensusType,
+		MaxTransNum:    *delegate.MaxTransNum,
+		GasLimit:       *delegate.GasLimit,
 	}
 	return r.Cli.UpdateDelegates(input)
 }

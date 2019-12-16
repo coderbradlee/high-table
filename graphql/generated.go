@@ -247,13 +247,13 @@ type Delegate {
 input InputDelegate {
     epoch_number:Int!
     delegate_id:Int!
-    delegate_name:String!
-    delegate_nodeid:String!
+    delegate_name:String
+    delegate_nodeid:String
     group_id:Int!
-    group_name:String!
-    consensus_type:String!
-    max_trans_num:Int!
-    gas_limit:Int!
+    group_name:String
+    consensus_type:String
+    max_trans_num:Int
+    gas_limit:Int
 }`},
 )
 
@@ -1560,13 +1560,13 @@ func (ec *executionContext) unmarshalInputInputDelegate(ctx context.Context, v i
 			}
 		case "delegate_name":
 			var err error
-			it.DelegateName, err = ec.unmarshalNString2string(ctx, v)
+			it.DelegateName, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "delegate_nodeid":
 			var err error
-			it.DelegateNodeid, err = ec.unmarshalNString2string(ctx, v)
+			it.DelegateNodeid, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -1578,25 +1578,25 @@ func (ec *executionContext) unmarshalInputInputDelegate(ctx context.Context, v i
 			}
 		case "group_name":
 			var err error
-			it.GroupName, err = ec.unmarshalNString2string(ctx, v)
+			it.GroupName, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "consensus_type":
 			var err error
-			it.ConsensusType, err = ec.unmarshalNString2string(ctx, v)
+			it.ConsensusType, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "max_trans_num":
 			var err error
-			it.MaxTransNum, err = ec.unmarshalNInt2int(ctx, v)
+			it.MaxTransNum, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "gas_limit":
 			var err error
-			it.GasLimit, err = ec.unmarshalNInt2int(ctx, v)
+			it.GasLimit, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2295,6 +2295,29 @@ func (ec *executionContext) marshalODelegate2ᚖgithubᚗcomᚋiotexprojectᚋhi
 		return graphql.Null
 	}
 	return ec._Delegate(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
+	return graphql.UnmarshalInt(v)
+}
+
+func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	return graphql.MarshalInt(v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOInt2int(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.marshalOInt2int(ctx, sel, *v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

@@ -15,13 +15,13 @@ type Delegate struct {
 }
 
 type InputDelegate struct {
-	EpochNumber    int    `json:"epoch_number"`
-	DelegateID     int    `json:"delegate_id"`
-	DelegateName   string `json:"delegate_name"`
-	DelegateNodeid string `json:"delegate_nodeid"`
-	GroupID        int    `json:"group_id"`
-	GroupName      string `json:"group_name"`
-	ConsensusType  string `json:"consensus_type"`
-	MaxTransNum    int    `json:"max_trans_num"`
-	GasLimit       int    `json:"gas_limit"`
+	EpochNumber    int     `json:"epoch_number"`
+	DelegateID     int     `json:"delegate_id"`
+	DelegateName   *string `json:"delegate_name"`
+	DelegateNodeid *string `json:"delegate_nodeid"`
+	GroupID        int     `json:"group_id"`
+	GroupName      *string `json:"group_name"`
+	ConsensusType  *string `json:"consensus_type"`
+	MaxTransNum    *int    `json:"max_trans_num"`
+	GasLimit       *int    `json:"gas_limit"`
 }
