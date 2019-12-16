@@ -219,7 +219,6 @@ var parsedSchema = gqlparser.MustLoadSchema(
     delegate(epochNum: Int!, groupID: Int!): [Delegate]!
 }
 
-
 type Delegate {
     epoch_number:Int!
     delegate_id:Int!

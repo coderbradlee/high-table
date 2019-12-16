@@ -14,122 +14,69 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/99designs/gqlgen/handler"
 	"github.com/iotexproject/iotex-core/pkg/log"
-	"github.com/iotexproject/iotex-election/pb/api"
-	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
-	"github.com/iotexproject/iotex-analytics/graphql"
-	"github.com/iotexproject/iotex-analytics/indexcontext"
-	"github.com/iotexproject/iotex-analytics/indexservice"
-	"github.com/iotexproject/iotex-analytics/queryprotocol/actions"
-	"github.com/iotexproject/iotex-analytics/queryprotocol/chainmeta"
-	"github.com/iotexproject/iotex-analytics/queryprotocol/productivity"
-	"github.com/iotexproject/iotex-analytics/queryprotocol/rewards"
-	"github.com/iotexproject/iotex-analytics/queryprotocol/votings"
-	"github.com/iotexproject/iotex-analytics/sql"
+	"github.com/iotexproject/high-table/api"
+	"github.com/iotexproject/high-table/graphql"
+	"github.com/iotexproject/high-table/sql"
 )
+
+type Config struct {
+	Port       string `yaml:"port"`
+	Connection string `yaml:"connection"`
+	DBName     string `yaml:"DBName"`
+}
 
 const defaultPort = "8089"
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
-
 	configPath := os.Getenv("CONFIG")
 	if configPath == "" {
 		configPath = "config.yaml"
 	}
-
-	chainEndpoint := os.Getenv("CHAIN_ENDPOINT")
-	if chainEndpoint == "" {
-		chainEndpoint = "127.0.0.1:14014"
-	}
-
-	electionEndpoint := os.Getenv("ELECTION_ENDPOINT")
-	if electionEndpoint == "" {
-		electionEndpoint = "127.0.0.1:8090"
-	}
-
-	connectionStr := os.Getenv("CONNECTION_STRING")
-	if connectionStr == "" {
-		connectionStr = "root:rootuser@tcp(127.0.0.1:3306)/"
-	}
-
-	dbName := os.Getenv("DB_NAME")
-	if dbName == "" {
-		dbName = "analytics"
-	}
-
 	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		log.L().Fatal("Failed to load config file", zap.Error(err))
 	}
-	var cfg indexservice.Config
+	var cfg Config
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		log.L().Fatal("failed to unmarshal config", zap.Error(err))
 	}
 
-	store := sql.NewMySQL(connectionStr, dbName)
-
-	idx := indexservice.NewIndexer(store, cfg)
-	if err := idx.RegisterDefaultProtocols(); err != nil {
-		log.L().Fatal("Failed to register default protocols", zap.Error(err))
+	cfg.Port = os.Getenv("PORT")
+	if cfg.Port == "" {
+		cfg.Port = defaultPort
+	}
+	cfg.Connection = os.Getenv("CONNECTION_STRING")
+	if cfg.Connection == "" {
+		cfg.Connection = "root:rootuser@tcp(127.0.0.1:3306)/"
 	}
 
-	http.Handle("/", graphqlHandler(handler.Playground("GraphQL playground", "/query")))
-	http.Handle("/query", graphqlHandler(handler.GraphQL(graphql.NewExecutableSchema(graphql.Config{Resolvers: &graphql.Resolver{
-		PP: productivity.NewProtocol(idx),
-		RP: rewards.NewProtocol(idx),
-		VP: votings.NewProtocol(idx),
-		AP: actions.NewProtocol(idx),
-		CP: chainmeta.NewProtocol(idx),
-	}}))))
+	cfg.DBName = os.Getenv("DB_NAME")
+	if cfg.DBName == "" {
+		cfg.DBName = "high_table"
+	}
 
-	log.S().Infof("connect to http://localhost:%s/ for GraphQL playground", port)
+	store := sql.NewMySQL(cfg.Connection, cfg.DBName)
+	delegates := api.NewProtocol(store)
+	err = delegates.CreateTables(context.Background())
+	if err != nil {
+		log.S().Error("delegates.CreateTables", zap.Error(err))
+		return
+	}
+	http.Handle("/", graphqlHandler(handler.Playground("GraphQL playground", "/query")))
+	http.Handle("/query", graphqlHandler(handler.GraphQL(graphql.NewExecutableSchema(graphql.Config{Resolvers: &graphql.Resolver{}}))))
+
+	log.S().Infof("connect to http://0.0.0.0:%s/ for GraphQL playground", cfg.Port)
 
 	// Start GraphQL query service
 	go func() {
-		if err := http.ListenAndServe(":"+port, nil); err != nil {
+		if err := http.ListenAndServe(":"+cfg.Port, nil); err != nil {
 			log.L().Fatal("Failed to serve index query service", zap.Error(err))
-		}
-	}()
-
-	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	conn1, err := grpc.DialContext(grpcCtx1, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
-	if err != nil {
-		log.L().Error("Failed to connect to chain's API server.")
-	}
-	chainClient := iotexapi.NewAPIServiceClient(conn1)
-
-	grpcCtx2, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	conn2, err := grpc.DialContext(grpcCtx2, electionEndpoint, grpc.WithBlock(), grpc.WithInsecure())
-	if err != nil {
-		log.L().Error("Failed to connect to election's API server.")
-	}
-	electionClient := api.NewAPIServiceClient(conn2)
-
-	ctx := indexcontext.WithIndexCtx(context.Background(), indexcontext.IndexCtx{
-		ChainClient:    chainClient,
-		ElectionClient: electionClient,
-	})
-
-	if err := idx.Start(ctx); err != nil {
-		log.L().Fatal("Failed to start the indexer", zap.Error(err))
-	}
-
-	defer func() {
-		if err := idx.Stop(ctx); err != nil {
-			log.L().Fatal("Failed to stop the indexer", zap.Error(err))
 		}
 	}()
 

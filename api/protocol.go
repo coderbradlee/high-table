@@ -4,14 +4,21 @@
 // permitted by law, all liability for your use of the code is disclaimed. This source code is governed by Apache
 // License 2.0 that can be found in the LICENSE file.
 
-package queryprotocol
+package api
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
 	"github.com/pkg/errors"
 )
+
+// Protocol defines the protocol interfaces for block indexer
+type Protocol interface {
+	CreateTables(context.Context) error
+	Initialize(context.Context, *sql.Tx) error
+}
 
 // RowExists checks whether a row exists
 func RowExists(db *sql.DB, query string, args ...interface{}) (bool, error) {
