@@ -16,11 +16,11 @@ type Delegate {
 input InputDelegate {
     epoch_number:Int!
     delegate_id:Int!
-    delegate_name:String!
-    delegate_nodeid:String!
+    delegate_name:String
+    delegate_nodeid:String
     group_id:Int!
-    group_name:String!
-    consensus_type:String!
-    max_trans_num:Int!
-    gas_limit:Int!
+    group_name:String
+    consensus_type:String
+    max_trans_num:Int
+    gas_limit:Int
 }

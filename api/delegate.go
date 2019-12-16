@@ -29,6 +29,7 @@ const (
 	 consensus_type varchar(255) NOT NULL,
 	 max_trans_num decimal(65, 0),
 	 gas_limit decimal(65, 0) NOT NULL,
+	 PRIMARY KEY (epoch_number, delegate_id, group_id),
 	 UNIQUE INDEX delegate_group_index(epoch_number,delegate_id, group_id))`
 	selectDelegates = "SELECT epoch_number,	delegate_id,delegate_name,delegate_nodeid,group_id,group_name,consensus_type,max_trans_num,gas_limit from %s where epoch_number=? and group_id=?"
 	existDelegates  = "SELECT * from %s where epoch_number=? and group_id=? and delegate_id=?"
