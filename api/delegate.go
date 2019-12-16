@@ -78,7 +78,7 @@ func (p *Delegates) Initialize(context.Context, *sql.Tx) error {
 
 // GetActionsByDates gets actions by start date and end date
 func (p *Delegates) GetDelegates(epochNum int, groupID int) (ret []*Delegate, err error) {
-	db := p.Store
+	db := p.Store.GetDB()
 	if db == nil {
 		return nil, errors.New("db is nil")
 	}
