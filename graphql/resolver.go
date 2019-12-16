@@ -55,15 +55,27 @@ func (r *queryResolver) getDelegates(ctx context.Context, epochNum int, groupID 
 // Delegate handles delegate requests
 func (r *queryResolver) UpdateDelegate(ctx context.Context, delegate InputDelegate) (bool, error) {
 	input := &api.Delegate{
-		EpochNumber:    delegate.EpochNumber,
-		DelegateID:     delegate.DelegateID,
-		DelegateName:   *delegate.DelegateName,
-		DelegateNodeid: *delegate.DelegateNodeid,
-		GroupID:        delegate.GroupID,
-		GroupName:      *delegate.GroupName,
-		ConsensusType:  *delegate.ConsensusType,
-		MaxTransNum:    *delegate.MaxTransNum,
-		GasLimit:       *delegate.GasLimit,
+		EpochNumber: delegate.EpochNumber,
+		DelegateID:  delegate.DelegateID,
+		GroupID:     delegate.GroupID,
+	}
+	if delegate.DelegateName != nil {
+		input.DelegateName = *delegate.DelegateName
+	}
+	if delegate.DelegateNodeid != nil {
+		input.DelegateNodeid = *delegate.DelegateNodeid
+	}
+	if delegate.GroupName != nil {
+		input.GroupName = *delegate.GroupName
+	}
+	if delegate.ConsensusType != nil {
+		input.ConsensusType = *delegate.ConsensusType
+	}
+	if delegate.MaxTransNum != nil {
+		input.MaxTransNum = *delegate.MaxTransNum
+	}
+	if delegate.GasLimit != nil {
+		input.GasLimit = *delegate.GasLimit
 	}
 	return r.Cli.UpdateDelegates(input)
 }
