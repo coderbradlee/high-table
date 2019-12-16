@@ -129,9 +129,13 @@ func (p *Delegates) UpdateDelegates(delegate *Delegate) (ok bool, err error) {
 		return false, err
 	}
 	insert := fmt.Sprintf(insertDelegates, delegateTableName)
-	fmt.Println(insert)
-	if _, err := db.Exec(insert, delegate.EpochNumber, delegate.DelegateID, delegate.DelegateName, delegate.DelegateNodeid, delegate.GroupID, delegate.GroupName, delegate.ConsensusType, delegate.MaxTransNum, delegate.GasLimit); err != nil {
-		return false, errors.Wrapf(err, "failed to update delegates")
+	if err = p.Store.Transact(func(tx *sql.Tx) error {
+		if _, err = tx.Exec(insert, delegate.EpochNumber, delegate.DelegateID, delegate.DelegateName, delegate.DelegateNodeid, delegate.GroupID, delegate.GroupName, delegate.ConsensusType, delegate.MaxTransNum, delegate.GasLimit); err != nil {
+			return errors.Wrapf(err, "failed to update delegates")
+		}
+		return nil
+	}); err != nil {
+		return false, err
 	}
 	return true, nil
 }
