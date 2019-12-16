@@ -32,7 +32,7 @@ func (r *queryResolver) Delegate(ctx context.Context, epochNum int, groupID int)
 }
 
 func (r *queryResolver) getDelegates(ctx context.Context, epochNum int, groupID int) (ret []*Delegate, err error) {
-	delegates, err := r.cli.GetDelegates(epochNum, groupID)
+	delegates, err := r.Cli.GetDelegates(epochNum, groupID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get delegates information")
 	}
