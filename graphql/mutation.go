@@ -25,7 +25,7 @@ func (m *Mutationer) Mutation() MutationResolver {
 type mutationResolver struct{ *Mutationer }
 
 // Delegate handles delegate requests
-func (r *mutationResolver) Delegate(ctx context.Context, delegate InputDelegate) error {
+func (r *mutationResolver) Delegate(ctx context.Context, delegate InputDelegate) (bool, error) {
 	input := &api.Delegate{
 		EpochNumber:    delegate.EpochNumber,
 		DelegateID:     delegate.DelegateID,

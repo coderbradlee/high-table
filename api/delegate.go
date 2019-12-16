@@ -110,23 +110,23 @@ func (p *Delegates) GetDelegates(epochNum int, groupID int) (ret []*Delegate, er
 	}
 	return
 }
-func (p *Delegates) UpdateDelegates(delegate *Delegate) (err error) {
+func (p *Delegates) UpdateDelegates(delegate *Delegate) (ok bool, err error) {
 	db := p.Store.GetDB()
 	if db == nil {
-		return errors.New("db is nil")
+		return false, errors.New("db is nil")
 	}
 	getQuery := fmt.Sprintf(existDelegates, delegateTableName)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
-		return errors.Wrap(err, "failed to prepare get query")
+		return false, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
 	exist, err := RowExists(db, getQuery, delegate.EpochNumber, delegate.GroupID, delegate.DelegateID)
 	if exist {
 		// update
 		fmt.Println("exist")
-		return nil
+		return false, nil
 	}
 
-	return
+	return true, nil
 }

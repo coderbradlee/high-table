@@ -19,7 +19,7 @@ type Protocol interface {
 	CreateTables(context.Context) error
 	Initialize(context.Context, *sql.Tx) error
 	GetDelegates(int, int) ([]*Delegate, error)
-	UpdateDelegates(*Delegate) error
+	UpdateDelegates(*Delegate) (bool, error)
 }
 
 // RowExists checks whether a row exists
