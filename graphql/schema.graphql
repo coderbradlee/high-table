@@ -2,7 +2,7 @@ type Query {
     delegate(epochNum: Int!, groupID: Int!): [Delegate]!
 }
 type Mutation {
-    delegate(delegate: InputDelegate!): Boolean!
+    delegate(delegate: InputDelegate!)
 }
 type Delegate {
     epoch_number:Int!
