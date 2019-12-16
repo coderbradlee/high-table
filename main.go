@@ -75,7 +75,7 @@ func main() {
 		return
 	}
 	http.Handle("/", graphqlHandler(handler.Playground("GraphQL playground", "/query")))
-	http.Handle("/query", graphqlHandler(handler.GraphQL(graphql.NewExecutableSchema(graphql.Config{Resolvers: &graphql.Resolver{}}))))
+	http.Handle("/query", graphqlHandler(handler.GraphQL(graphql.NewExecutableSchema(graphql.Config{Resolvers: &graphql.Resolver{delegates}}))))
 
 	log.S().Infof("connect to http://0.0.0.0:%s/ for GraphQL playground", cfg.Port)
 
