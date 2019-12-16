@@ -118,11 +118,6 @@ func (p *Delegates) UpdateDelegates(delegate *Delegate) (ok bool, err error) {
 		return false, errors.New("db is nil")
 	}
 	getQuery := fmt.Sprintf(existDelegates, delegateTableName)
-	stmt, err := db.Prepare(getQuery)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to prepare get query")
-	}
-	defer stmt.Close()
 	fmt.Println(delegate)
 	exist, err := RowExists(db, getQuery, delegate.EpochNumber, delegate.GroupID, delegate.DelegateID)
 	if exist {

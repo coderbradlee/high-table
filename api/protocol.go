@@ -24,7 +24,7 @@ type Protocol interface {
 
 // RowExists checks whether a row exists
 func RowExists(db *sql.DB, query string, args ...interface{}) (bool, error) {
-	var exists bool
+	exists := 0
 	query = fmt.Sprintf("SELECT exists (%s)", query)
 	fmt.Println(query)
 	stmt, err := db.Prepare(query)
@@ -37,5 +37,8 @@ func RowExists(db *sql.DB, query string, args ...interface{}) (bool, error) {
 	if err != nil && err != sql.ErrNoRows {
 		return false, errors.Wrap(err, "failed to query the row")
 	}
-	return exists, nil
+	if exists != 0 {
+		return true, nil
+	}
+	return false, nil
 }
