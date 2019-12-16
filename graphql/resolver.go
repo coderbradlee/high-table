@@ -16,7 +16,7 @@ import (
 
 // Resolver is hte resolver that handles GraphQL request
 type Resolver struct {
-	cli api.Protocol
+	Cli api.Protocol
 }
 
 // Query returns a query resolver
