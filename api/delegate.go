@@ -130,6 +130,9 @@ func (p *Delegates) UpdateDelegates(delegate *Delegate) (ok bool, err error) {
 		fmt.Println("exist")
 		return false, nil
 	}
+	if err != nil {
+		return false, err
+	}
 	insert := fmt.Sprintf(insertDelegates, delegateTableName)
 	fmt.Println(insert)
 	if _, err := db.Exec(insert, delegate.EpochNumber, delegate.DelegateID, delegate.DelegateName, delegate.DelegateNodeid, delegate.GroupID, delegate.GroupName, delegate.ConsensusType, delegate.MaxTransNum, delegate.GasLimit); err != nil {
