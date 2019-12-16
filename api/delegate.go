@@ -11,6 +11,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/pkg/errors"
+
 	s "github.com/iotexproject/high-table/sql"
 )
 
@@ -28,10 +30,24 @@ const (
 	 max_trans_num decimal(65, 0),
 	 gas_limit decimal(65, 0) NOT NULL,
 	 UNIQUE INDEX delegate_group_index(epoch_number,delegate_id, group_id))`
-	selectActionHistoryByTimestamp = "SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount, t1.gas_price*t1.gas_consumed " +
-		"FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height " +
-		"WHERE timestamp >= ? AND timestamp <= ? ORDER BY `timestamp` desc limit ?,?"
+	selectDelegates = "SELECT epoch_number,	delegate_id,delegate_name,delegate_nodeid,group_id,group_name,consensus_type,max_trans_num,gas_limit from %s where epoch_number=? and group_id=?"
 )
+
+var (
+	ErrNotExist = errors.New("not exist")
+)
+
+type Delegate struct {
+	EpochNumber    int    `json:"epoch_number"`
+	DelegateID     int    `json:"delegate_id"`
+	DelegateName   string `json:"delegate_name"`
+	DelegateNodeid string `json:"delegate_nodeid"`
+	GroupID        int    `json:"group_id"`
+	GroupName      string `json:"group_name"`
+	ConsensusType  string `json:"consensus_type"`
+	MaxTransNum    int    `json:"max_trans_num"`
+	GasLimit       int    `json:"gas_limit"`
+}
 
 // Protocol defines the protocol of querying tables
 type Delegates struct {
@@ -61,38 +77,35 @@ func (p *Delegates) Initialize(context.Context, *sql.Tx) error {
 }
 
 // GetActionsByDates gets actions by start date and end date
-//func (p *Protocol) GetActionsByDates(startDate, endDate uint64, offset, size int) ([]*ActionInfo, error) {
-//	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
-//		return nil, errors.New("actions protocol is unregistered")
-//	}
-//
-//	db := p.indexer.Store.GetDB()
-//
-//	getQuery := fmt.Sprintf(selectActionHistoryByTimestamp, actions.ActionHistoryTableName, blocks.BlockHistoryTableName)
-//	stmt, err := db.Prepare(getQuery)
-//	if err != nil {
-//		return nil, errors.Wrap(err, "failed to prepare get query")
-//	}
-//	defer stmt.Close()
-//
-//	rows, err := stmt.Query(startDate, endDate, offset, size)
-//	if err != nil {
-//		return nil, errors.Wrap(err, "failed to execute get query")
-//	}
-//
-//	var actInfo ActionInfo
-//	parsedRows, err := s.ParseSQLRows(rows, &actInfo)
-//	if err != nil {
-//		return nil, errors.Wrap(err, "failed to parse results")
-//	}
-//	if len(parsedRows) == 0 {
-//		err = indexprotocol.ErrNotExist
-//		return nil, err
-//	}
-//
-//	actionInfoList := make([]*ActionInfo, 0)
-//	for _, parsedRow := range parsedRows {
-//		actionInfoList = append(actionInfoList, parsedRow.(*ActionInfo))
-//	}
-//	return actionInfoList, nil
-//}
+func (p *Delegates) GetDelegates(epochNum int, groupID int) (ret []*Delegate, err error) {
+	db := p.Store
+	if db == nil {
+		return nil, errors.New("db is nil")
+	}
+	getQuery := fmt.Sprintf(selectDelegates, delegateTableName)
+	stmt, err := db.Prepare(getQuery)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to prepare get query")
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(epochNum, groupID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to execute get query")
+	}
+
+	var delegate Delegate
+	parsedRows, err := s.ParseSQLRows(rows, &delegate)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse results")
+	}
+	if len(parsedRows) == 0 {
+		err = ErrNotExist
+		return
+	}
+
+	for _, parsedRow := range parsedRows {
+		ret = append(ret, parsedRow.(*Delegate))
+	}
+	return
+}

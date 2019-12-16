@@ -9,6 +9,8 @@ package graphql
 import (
 	"context"
 
+	"github.com/pkg/errors"
+
 	"github.com/iotexproject/high-table/api"
 ) // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
@@ -26,47 +28,28 @@ type queryResolver struct{ *Resolver }
 
 // Delegate handles delegate requests
 func (r *queryResolver) Delegate(ctx context.Context, epochNum int, groupID int) ([]*Delegate, error) {
-	return r.getDelegates()
+	return r.getDelegates(ctx, epochNum, groupID)
 }
 
-func (r *queryResolver) getDelegates() ([]*Delegate, error) {
-	//requestedFields := graphql.CollectAllFields(ctx)
-	//argsMap := parseFieldArguments(ctx, "byContractAddress", "xrc20")
-	//address, err := getStringArg(argsMap, "address")
-	//if err != nil {
-	//	return errors.Wrap(err, "failed to get address")
-	//}
-	//numPerPage, err := getIntArg(argsMap, "numPerPage")
-	//if err != nil {
-	//	return errors.Wrap(err, "failed to get numPerPage")
-	//}
-	//page, err := getIntArg(argsMap, "page")
-	//if err != nil {
-	//	return errors.Wrap(err, "failed to get page")
-	//}
-	//output := &Xrc20List{Exist: false}
-	//actionResponse.ByContractAddress = output
-	//xrc20InfoList, err := r.AP.GetXrc20(address, uint64(numPerPage), uint64(page))
-	//switch {
-	//case errors.Cause(err) == indexprotocol.ErrNotExist:
-	//	return nil
-	//case err != nil:
-	//	return errors.Wrap(err, "failed to get contract information")
-	//}
-	//output.Exist = true
-	//output.Count = len(xrc20InfoList)
-	//output.Xrc20 = make([]*Xrc20Info, 0, len(xrc20InfoList))
-	//for _, c := range xrc20InfoList {
-	//	output.Xrc20 = append(output.Xrc20, &Xrc20Info{
-	//		Hash:      c.Hash,
-	//		Timestamp: c.Timestamp,
-	//		From:      c.From,
-	//		To:        c.To,
-	//		Quantity:  c.Quantity,
-	//		Contract:  c.Contract,
-	//	})
-	//}
-	return nil, nil
+func (r *queryResolver) getDelegates(ctx context.Context, epochNum int, groupID int) (ret []*Delegate, err error) {
+	delegates, err := r.cli.GetDelegates(epochNum, groupID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get delegates information")
+	}
+	for _, d := range delegates {
+		ret = append(ret, &Delegate{
+			EpochNumber:    d.EpochNumber,
+			DelegateID:     d.DelegateID,
+			DelegateName:   d.DelegateName,
+			DelegateNodeid: d.DelegateNodeid,
+			GroupID:        d.GroupID,
+			GroupName:      d.GroupName,
+			ConsensusType:  d.ConsensusType,
+			MaxTransNum:    d.MaxTransNum,
+			GasLimit:       d.GasLimit,
+		})
+	}
+	return
 }
 
 //func containField(requestedFields []string, field string) bool {
