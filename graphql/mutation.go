@@ -18,9 +18,9 @@ type Mutationer struct {
 }
 
 //// Query returns a query resolver
-//func (m *Mutationer) Query() MutationResolver {
-//	return &mutationResolver{m}
-//}
+func (m *Mutationer) Mutation() MutationResolver {
+	return &mutationResolver{m}
+}
 
 type mutationResolver struct{ *Mutationer }
 
