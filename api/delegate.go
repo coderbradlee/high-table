@@ -33,6 +33,7 @@ const (
 	 UNIQUE INDEX delegate_group_index(epoch_number,delegate_id, group_id))`
 	selectDelegates = "SELECT epoch_number,	delegate_id,delegate_name,delegate_nodeid,group_id,group_name,consensus_type,max_trans_num,gas_limit from %s where epoch_number=? and group_id=?"
 	existDelegates  = "SELECT * from %s where epoch_number=? and group_id=? and delegate_id=?"
+	insertDelegates = "INSERT INTO %s (epoch_number,delegate_id,delegate_name,delegate_nodeid,group_id,group_name,consensus_type,max_trans_num,gas_limit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 )
 
 var (
@@ -129,5 +130,9 @@ func (p *Delegates) UpdateDelegates(delegate *Delegate) (ok bool, err error) {
 		return false, nil
 	}
 
+	insert := fmt.Sprintf(insertDelegates, delegateTableName)
+	if _, err := db.Exec(insert, delegate.EpochNumber, delegate.DelegateID, delegate.DelegateName, delegate.DelegateNodeid, delegate.GroupID, delegate.GroupName, delegate.ConsensusType, delegate.MaxTransNum, delegate.GasLimit); err != nil {
+		return false, errors.Wrapf(err, "failed to update delegates")
+	}
 	return true, nil
 }
