@@ -31,6 +31,7 @@ const (
 	 gas_limit decimal(65, 0) NOT NULL,
 	 UNIQUE INDEX delegate_group_index(epoch_number,delegate_id, group_id))`
 	selectDelegates = "SELECT epoch_number,	delegate_id,delegate_name,delegate_nodeid,group_id,group_name,consensus_type,max_trans_num,gas_limit from %s where epoch_number=? and group_id=?"
+	existDelegates  = "SELECT * from %s where epoch_number=? and group_id=? and delegate_id=?"
 )
 
 var (
@@ -107,5 +108,25 @@ func (p *Delegates) GetDelegates(epochNum int, groupID int) (ret []*Delegate, er
 	for _, parsedRow := range parsedRows {
 		ret = append(ret, parsedRow.(*Delegate))
 	}
+	return
+}
+func (p *Delegates) UpdateDelegates(delegate *Delegate) (err error) {
+	db := p.Store.GetDB()
+	if db == nil {
+		return errors.New("db is nil")
+	}
+	getQuery := fmt.Sprintf(existDelegates, delegateTableName)
+	stmt, err := db.Prepare(getQuery)
+	if err != nil {
+		return errors.Wrap(err, "failed to prepare get query")
+	}
+	defer stmt.Close()
+	exist, err := RowExists(db, getQuery, delegate.EpochNumber, delegate.GroupID, delegate.DelegateID)
+	if exist {
+		// update
+		fmt.Println("exist")
+		return nil
+	}
+
 	return
 }

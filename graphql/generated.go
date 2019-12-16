@@ -33,6 +33,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Mutation() MutationResolver
 	Query() QueryResolver
 }
 
@@ -52,11 +53,18 @@ type ComplexityRoot struct {
 		MaxTransNum    func(childComplexity int) int
 	}
 
+	Mutation struct {
+		Delegate func(childComplexity int, delegate InputDelegate) int
+	}
+
 	Query struct {
 		Delegate func(childComplexity int, epochNum int, groupID int) int
 	}
 }
 
+type MutationResolver interface {
+	Delegate(ctx context.Context, delegate InputDelegate) (bool, error)
+}
 type QueryResolver interface {
 	Delegate(ctx context.Context, epochNum int, groupID int) ([]*Delegate, error)
 }
@@ -139,6 +147,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Delegate.MaxTransNum(childComplexity), true
 
+	case "Mutation.Delegate":
+		if e.complexity.Mutation.Delegate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_delegate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Delegate(childComplexity, args["delegate"].(InputDelegate)), true
+
 	case "Query.Delegate":
 		if e.complexity.Query.Delegate == nil {
 			break
@@ -173,7 +193,20 @@ func (e *executableSchema) Query(ctx context.Context, op *ast.OperationDefinitio
 }
 
 func (e *executableSchema) Mutation(ctx context.Context, op *ast.OperationDefinition) *graphql.Response {
-	return graphql.ErrorResponse(ctx, "mutations are not supported")
+	ec := executionContext{graphql.GetRequestContext(ctx), e}
+
+	buf := ec.RequestMiddleware(ctx, func(ctx context.Context) []byte {
+		data := ec._Mutation(ctx, op.SelectionSet)
+		var buf bytes.Buffer
+		data.MarshalGQL(&buf)
+		return buf.Bytes()
+	})
+
+	return &graphql.Response{
+		Data:       buf,
+		Errors:     ec.Errors,
+		Extensions: ec.Extensions,
+	}
 }
 
 func (e *executableSchema) Subscription(ctx context.Context, op *ast.OperationDefinition) func() *graphql.Response {
@@ -218,7 +251,9 @@ var parsedSchema = gqlparser.MustLoadSchema(
 	&ast.Source{Name: "schema.graphql", Input: `type Query {
     delegate(epochNum: Int!, groupID: Int!): [Delegate]!
 }
-
+type Mutation {
+    delegate(delegate: InputDelegate!): Boolean!
+}
 type Delegate {
     epoch_number:Int!
     delegate_id:Int!
@@ -230,12 +265,36 @@ type Delegate {
     max_trans_num:Int!
     gas_limit:Int!
 }
-`},
+input InputDelegate {
+    epoch_number:Int!
+    delegate_id:Int!
+    delegate_name:String!
+    delegate_nodeid:String!
+    group_id:Int!
+    group_name:String!
+    consensus_type:String!
+    max_trans_num:Int!
+    gas_limit:Int!
+}`},
 )
 
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_delegate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 InputDelegate
+	if tmp, ok := rawArgs["delegate"]; ok {
+		arg0, err = ec.unmarshalNInputDelegate2githubᚗcomᚋiotexprojectᚋhighᚑtableᚋgraphqlᚐInputDelegate(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["delegate"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -548,6 +607,40 @@ func (ec *executionContext) _Delegate_gas_limit(ctx context.Context, field graph
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_delegate(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_delegate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Delegate(rctx, args["delegate"].(InputDelegate))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_delegate(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -579,7 +672,7 @@ func (ec *executionContext) _Query_delegate(ctx context.Context, field graphql.C
 	res := resTmp.([]*Delegate)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNDelegate2ᚕᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐDelegate(ctx, field.Selections, res)
+	return ec.marshalNDelegate2ᚕᚖgithubᚗcomᚋiotexprojectᚋhighᚑtableᚋgraphqlᚐDelegate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -1468,6 +1561,72 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputInputDelegate(ctx context.Context, v interface{}) (InputDelegate, error) {
+	var it InputDelegate
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "epoch_number":
+			var err error
+			it.EpochNumber, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "delegate_id":
+			var err error
+			it.DelegateID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "delegate_name":
+			var err error
+			it.DelegateName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "delegate_nodeid":
+			var err error
+			it.DelegateNodeid, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "group_id":
+			var err error
+			it.GroupID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "group_name":
+			var err error
+			it.GroupName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "consensus_type":
+			var err error
+			it.ConsensusType, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "max_trans_num":
+			var err error
+			it.MaxTransNum, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "gas_limit":
+			var err error
+			it.GasLimit, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -1529,6 +1688,37 @@ func (ec *executionContext) _Delegate(ctx context.Context, sel ast.SelectionSet,
 			}
 		case "gas_limit":
 			out.Values[i] = ec._Delegate_gas_limit(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalid {
+		return graphql.Null
+	}
+	return out
+}
+
+var mutationImplementors = []string{"Mutation"}
+
+func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ctx, sel, mutationImplementors)
+
+	ctx = graphql.WithResolverContext(ctx, &graphql.ResolverContext{
+		Object: "Mutation",
+	})
+
+	out := graphql.NewFieldSet(fields)
+	invalid := false
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Mutation")
+		case "delegate":
+			out.Values[i] = ec._Mutation_delegate(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalid = true
 			}
@@ -1840,7 +2030,7 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return graphql.MarshalBoolean(v)
 }
 
-func (ec *executionContext) marshalNDelegate2ᚕᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐDelegate(ctx context.Context, sel ast.SelectionSet, v []*Delegate) graphql.Marshaler {
+func (ec *executionContext) marshalNDelegate2ᚕᚖgithubᚗcomᚋiotexprojectᚋhighᚑtableᚋgraphqlᚐDelegate(ctx context.Context, sel ast.SelectionSet, v []*Delegate) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -1864,7 +2054,7 @@ func (ec *executionContext) marshalNDelegate2ᚕᚖgithubᚗcomᚋiotexproject�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalODelegate2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐDelegate(ctx, sel, v[i])
+			ret[i] = ec.marshalODelegate2ᚖgithubᚗcomᚋiotexprojectᚋhighᚑtableᚋgraphqlᚐDelegate(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -1875,6 +2065,10 @@ func (ec *executionContext) marshalNDelegate2ᚕᚖgithubᚗcomᚋiotexproject�
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) unmarshalNInputDelegate2githubᚗcomᚋiotexprojectᚋhighᚑtableᚋgraphqlᚐInputDelegate(ctx context.Context, v interface{}) (InputDelegate, error) {
+	return ec.unmarshalInputInputDelegate(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
@@ -2130,11 +2324,11 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return ec.marshalOBoolean2bool(ctx, sel, *v)
 }
 
-func (ec *executionContext) marshalODelegate2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐDelegate(ctx context.Context, sel ast.SelectionSet, v Delegate) graphql.Marshaler {
+func (ec *executionContext) marshalODelegate2githubᚗcomᚋiotexprojectᚋhighᚑtableᚋgraphqlᚐDelegate(ctx context.Context, sel ast.SelectionSet, v Delegate) graphql.Marshaler {
 	return ec._Delegate(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalODelegate2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐDelegate(ctx context.Context, sel ast.SelectionSet, v *Delegate) graphql.Marshaler {
+func (ec *executionContext) marshalODelegate2ᚖgithubᚗcomᚋiotexprojectᚋhighᚑtableᚋgraphqlᚐDelegate(ctx context.Context, sel ast.SelectionSet, v *Delegate) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
