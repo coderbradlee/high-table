@@ -12,12 +12,17 @@ import (
 	"github.com/iotexproject/high-table/api"
 ) // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
-// Mutation returns a Mutation resolver
-func (m *Resolver) Mutation() QueryResolver {
+// Resolver is hte resolver that handles GraphQL request
+type Mutationer struct {
+	Cli api.Protocol
+}
+
+//// Query returns a query resolver
+func (m *Mutationer) Mutation() MutationResolver {
 	return &mutationResolver{m}
 }
 
-type mutationResolver struct{ *Resolver }
+type mutationResolver struct{ *Mutationer }
 
 // Delegate handles delegate requests
 func (r *mutationResolver) Delegate(ctx context.Context, delegate InputDelegate) (bool, error) {

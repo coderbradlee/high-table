@@ -1,13 +1,6 @@
-schema {
-    query: Query
-    mutation: Mutation
-}
-
 type Query {
-    delegate(epochNum: Int!, groupID: Int!): [Delegate]!
-}
-type Mutation {
-    delegate(delegate: InputDelegate!): Boolean!
+    delegates(epochNum: Int!, groupID: Int!): [Delegate]!
+    updateDelegate(delegate: InputDelegate!): Boolean!
 }
 type Delegate {
     epoch_number:Int!

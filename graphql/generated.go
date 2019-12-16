@@ -248,7 +248,12 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var parsedSchema = gqlparser.MustLoadSchema(
-	&ast.Source{Name: "schema.graphql", Input: `type Query {
+	&ast.Source{Name: "schema.graphql", Input: `schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Query {
     delegate(epochNum: Int!, groupID: Int!): [Delegate]!
 }
 type Mutation {
