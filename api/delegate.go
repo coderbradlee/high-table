@@ -37,9 +37,11 @@ const (
 )
 
 var (
+	// ErrNotExist define not exist error
 	ErrNotExist = errors.New("not exist")
 )
 
+// Delegate defines the protocol of querying tables
 type Delegate struct {
 	EpochNumber    int    `json:"epoch_number"`
 	DelegateID     int    `json:"delegate_id"`
@@ -52,7 +54,7 @@ type Delegate struct {
 	GasLimit       int    `json:"gas_limit"`
 }
 
-// Protocol defines the protocol of querying tables
+// Delegates defines the delegate protocol
 type Delegates struct {
 	Store s.Store
 }
@@ -68,18 +70,19 @@ func NewProtocol(
 
 // CreateTables creates tables
 func (p *Delegates) CreateTables(ctx context.Context) error {
-	// create reward history table
 	if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createDelegateTable,
 		delegateTableName)); err != nil {
 		return err
 	}
 	return nil
 }
+
+// Initialize init delegate table
 func (p *Delegates) Initialize(context.Context, *sql.Tx) error {
 	return nil
 }
 
-// GetActionsByDates gets actions by start date and end date
+// GetDelegates gets delegates from db
 func (p *Delegates) GetDelegates(epochNum int, groupID int) (ret []*Delegate, err error) {
 	db := p.Store.GetDB()
 	if db == nil {
@@ -112,6 +115,8 @@ func (p *Delegates) GetDelegates(epochNum int, groupID int) (ret []*Delegate, er
 	}
 	return
 }
+
+// UpdateDelegates insert and update delegate's table
 func (p *Delegates) UpdateDelegates(delegate *Delegate) (ok bool, err error) {
 	db := p.Store.GetDB()
 	if db == nil {
@@ -121,8 +126,6 @@ func (p *Delegates) UpdateDelegates(delegate *Delegate) (ok bool, err error) {
 	fmt.Println(delegate)
 	exist, err := RowExists(db, getQuery, delegate.EpochNumber, delegate.GroupID, delegate.DelegateID)
 	if exist {
-		// update
-		fmt.Println("exist")
 		return false, nil
 	}
 	if err != nil {

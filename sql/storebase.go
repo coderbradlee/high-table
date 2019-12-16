@@ -13,7 +13,6 @@ import (
 	"sync"
 
 	"github.com/rs/zerolog"
-
 	// this is required for mysql usage
 	"github.com/iotexproject/iotex-core/pkg/lifecycle"
 )
@@ -86,7 +85,7 @@ func (s *storeBase) Stop(_ context.Context) error {
 	return nil
 }
 
-// Stop closes the SQL
+// GetDB returns db
 func (s *storeBase) GetDB() *sql.DB {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()

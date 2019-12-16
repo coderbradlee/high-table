@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Protocol defines the protocol interfaces for block indexer
+// Protocol defines the protocol interfaces
 type Protocol interface {
 	CreateTables(context.Context) error
 	Initialize(context.Context, *sql.Tx) error

@@ -25,6 +25,7 @@ import (
 	"github.com/iotexproject/high-table/sql"
 )
 
+// Config is config
 type Config struct {
 	Port       string `yaml:"port"`
 	Connection string `yaml:"connection"`
