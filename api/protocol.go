@@ -26,7 +26,6 @@ type Protocol interface {
 func RowExists(db *sql.DB, query string, args ...interface{}) (bool, error) {
 	exists := 0
 	query = fmt.Sprintf("SELECT exists (%s)", query)
-	fmt.Println(query)
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to prepare query")

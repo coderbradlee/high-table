@@ -123,7 +123,6 @@ func (p *Delegates) UpdateDelegates(delegate *Delegate) (ok bool, err error) {
 		return false, errors.New("db is nil")
 	}
 	getQuery := fmt.Sprintf(existDelegates, delegateTableName)
-	fmt.Println(delegate)
 	exist, err := RowExists(db, getQuery, delegate.EpochNumber, delegate.GroupID, delegate.DelegateID)
 	if exist {
 		return false, nil
