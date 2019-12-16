@@ -123,16 +123,15 @@ func (p *Delegates) UpdateDelegates(delegate *Delegate) (ok bool, err error) {
 		return false, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
+	fmt.Println(delegate)
 	exist, err := RowExists(db, getQuery, delegate.EpochNumber, delegate.GroupID, delegate.DelegateID)
 	if exist {
 		// update
 		fmt.Println("exist")
 		return false, nil
 	}
-
 	insert := fmt.Sprintf(insertDelegates, delegateTableName)
 	fmt.Println(insert)
-	fmt.Println(delegate)
 	if _, err := db.Exec(insert, delegate.EpochNumber, delegate.DelegateID, delegate.DelegateName, delegate.DelegateNodeid, delegate.GroupID, delegate.GroupName, delegate.ConsensusType, delegate.MaxTransNum, delegate.GasLimit); err != nil {
 		return false, errors.Wrapf(err, "failed to update delegates")
 	}
