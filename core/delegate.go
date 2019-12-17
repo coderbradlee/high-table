@@ -73,11 +73,7 @@ func (p *Delegates) GetDelegates(delegateID int) (ret string, err error) {
 		return
 	}
 	getQuery := fmt.Sprintf(selectDelegates, delegateTableName)
-	tx, err := db.Begin()
-	if err != nil {
-		return
-	}
-	err = tx.QueryRow(getQuery, delegateID).Scan(&ret)
+	err = db.QueryRow(getQuery, delegateID).Scan(&ret)
 	return
 }
 
