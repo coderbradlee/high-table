@@ -10,7 +10,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"sync"
 
 	"github.com/pkg/errors"
 )
@@ -36,8 +35,7 @@ type Delegate struct {
 
 // Delegates defines the delegate protocol
 type Delegates struct {
-	db    *sql.DB
-	mutex sync.Mutex
+	db *sql.DB
 }
 
 // NewProtocol creates a new protocol
@@ -83,10 +81,8 @@ func (p *Delegates) GetDelegates(delegateID int) (ret string, err error) {
 	return
 }
 
-// UpdateDelegates insert and update delegate's table
+// UpdateDelegates insert or update delegate's table
 func (p *Delegates) UpdateDelegates(delegate *Delegate) (err error) {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
 	db := p.db
 	if db == nil {
 		err = errors.New("db is nil")
