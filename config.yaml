@@ -1,3 +1,2 @@
 port: 8089
-connection: root:rootuser@tcp(127.0.0.1:3306)/
-DBName: high_table
+DBPath: ./sqlite

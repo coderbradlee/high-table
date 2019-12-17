@@ -7,8 +7,8 @@ require (
 	github.com/agnivade/levenshtein v1.0.2 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/iotexproject/go-pkgs v0.1.1
-	github.com/iotexproject/iotex-core v0.8.1-0.20191007232750-b79fb5c7ebaa
-	github.com/iotexproject/iotex-election v0.2.7-0.20191008203349-58450eac6656 // indirect
+	github.com/iotexproject/iotex-core v0.10.1
+	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/pkg/errors v0.8.1
 	github.com/rs/zerolog v1.14.3
 	github.com/stretchr/testify v1.3.0

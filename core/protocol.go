@@ -4,14 +4,15 @@
 // permitted by law, all liability for your use of the code is disclaimed. This source code is governed by Apache
 // License 2.0 that can be found in the LICENSE file.
 
-package sql
+package core
 
 import (
-	// this is required for mysql usage
-	_ "github.com/go-sql-driver/mysql"
+	"context"
 )
 
-// NewMySQL instantiates a mysql
-func NewMySQL(connectStr string, dbName string) Store {
-	return newStoreBase("mysql", connectStr, dbName)
+// Protocol defines the protocol interfaces
+type Protocol interface {
+	CreateTables(context.Context) error
+	GetDelegates(int) (string, error)
+	UpdateDelegates(*Delegate) error
 }
