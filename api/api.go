@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/iotexproject/high-table/config"
 	"github.com/iotexproject/high-table/core"
@@ -44,6 +45,7 @@ func NewServer(
 	}
 	svr.grpcserver = grpc.NewServer()
 	iotexapi.RegisterAPIServiceServer(svr.grpcserver, svr)
+	reflection.Register(svr.grpcserver)
 	return svr, nil
 }
 
