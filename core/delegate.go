@@ -17,7 +17,7 @@ import (
 const (
 	ProtocolID          = "delegates"
 	delegateTableName   = "delegate_list"
-	createDelegateTable = `CREATE TABLE IF NOT EXISTS %s (delegate_id INTEGER, address BLOB)`
+	createDelegateTable = `CREATE TABLE IF NOT EXISTS %s (delegate_id INTEGER PRIMARY KEY, address BLOB)`
 	selectDelegates     = "SELECT address from %s where delegate_id=?"
 	insertDelegates     = "INSERT OR IGNORE INTO %s (delegate_id, address) VALUES (?, ?)"
 )
