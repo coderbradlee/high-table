@@ -22,12 +22,7 @@ import (
 	iotextypes "github.com/iotexproject/high-table/proto/golang/types"
 )
 
-var (
-	// ErrInternalServer indicates the internal server error
-	ErrInternalServer = errors.New("internal server error")
-)
-
-// Server provides api for user to query blockchain data
+// Server provides api for user to query data
 type Server struct {
 	cfg        *config.Config
 	grpcserver *grpc.Server
@@ -51,8 +46,7 @@ func NewServer(
 
 // Start starts the API server
 func (api *Server) Start() error {
-	portStr := ":" + api.cfg.Port
-	lis, err := net.Listen("tcp", portStr)
+	lis, err := net.Listen("tcp", ":"+api.cfg.Port)
 	if err != nil {
 		log.L().Error("API server failed to listen.", zap.Error(err))
 		return errors.Wrap(err, "API server failed to listen")
@@ -87,6 +81,8 @@ func (api *Server) GetDelegate(ctx context.Context, in *iotexapi.GetDelegateRequ
 	response.Delegate = delegate
 	return
 }
+
+// UpdateDelegate update delegate info
 func (api *Server) UpdateDelegate(ctx context.Context, in *iotexapi.UpdateDelegateRequest) (response *iotexapi.UpdateDelegateResponse, err error) {
 	response = &iotexapi.UpdateDelegateResponse{
 		Success: true,

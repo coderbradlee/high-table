@@ -13,8 +13,9 @@ type Config struct {
 }
 
 var (
+	// DefaultCfg is the default config
 	DefaultCfg = &Config{
 		Port:   "8090",
-		DBPath: "./hightable",
+		DBPath: "./hightable.db",
 	}
 )

@@ -1,2 +1,2 @@
 port: 8089
-DBPath: ./sqlite
+DBPath: ./sqlite3.db
