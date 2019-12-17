@@ -87,6 +87,9 @@ func (api *Server) GetDelegate(ctx context.Context, in *iotexapi.GetDelegateRequ
 	return
 }
 func (api *Server) UpdateDelegate(ctx context.Context, in *iotexapi.UpdateDelegateRequest) (response *iotexapi.UpdateDelegateResponse, err error) {
+	response = &iotexapi.UpdateDelegateResponse{
+		Success: true,
+	}
 	del := &core.Delegate{
 		core.Uint64ToInt64(in.Delegate.DelegateID),
 		in.Delegate.Address,
