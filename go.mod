@@ -4,8 +4,10 @@ go 1.12
 
 require (
 	github.com/99designs/gqlgen v0.8.3
+	github.com/Frankonly/iotex-core v0.5.0 // indirect
 	github.com/agnivade/levenshtein v1.0.2 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
+	github.com/golang/protobuf v1.3.1
 	github.com/iotexproject/go-pkgs v0.1.1
 	github.com/iotexproject/iotex-core v0.10.1
 	github.com/mattn/go-sqlite3 v1.11.0
@@ -20,6 +22,7 @@ require (
 	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
 	golang.org/x/tools v0.0.0-20190815235612-5b08f89bfc0c // indirect
 	google.golang.org/appengine v1.6.0 // indirect
+	google.golang.org/grpc v1.21.0
 	gopkg.in/yaml.v2 v2.2.2
 )
 

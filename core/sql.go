@@ -25,9 +25,9 @@ func NewDB(cfg *config.Config) (*sql.DB, error) {
 }
 
 //Uint64ToInt64 converts uint64 to int64
-func Uint64ToInt64(u uint64) int64 {
+func Uint64ToInt64(u uint64) int {
 	if u > uint64(maxInt) {
 		zap.L().Panic("Height can't be converted to int64")
 	}
-	return int64(u)
+	return int(u)
 }

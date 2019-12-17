@@ -7,11 +7,18 @@
 package api
 
 import (
-	"github.com/iotexproject/iotex-proto/golang/iotexapi"
+	"context"
+	"net"
+
+	"github.com/iotexproject/iotex-core/pkg/log"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"github.com/iotexproject/iotex-core/config"
+	"github.com/iotexproject/high-table/config"
+	"github.com/iotexproject/high-table/core"
+	iotexapi "github.com/iotexproject/high-table/proto/golang/api"
+	iotextypes "github.com/iotexproject/high-table/proto/golang/types"
 )
 
 var (
@@ -21,49 +28,70 @@ var (
 
 // Server provides api for user to query blockchain data
 type Server struct {
-	cfg        config.Config
+	cfg        *config.Config
 	grpcserver *grpc.Server
+	protocol   core.Protocol
 }
 
 // NewServer creates a new server
 func NewServer(
-	cfg config.Config,
+	cfg *config.Config,
+	protocol core.Protocol,
 ) (*Server, error) {
-
 	svr := &Server{
-		cfg: cfg,
+		cfg:      cfg,
+		protocol: protocol,
 	}
 	svr.grpcserver = grpc.NewServer()
 	iotexapi.RegisterAPIServiceServer(svr.grpcserver, svr)
-
 	return svr, nil
 }
 
 // Start starts the API server
 func (api *Server) Start() error {
-	//portStr := ":" + strconv.Itoa(api.cfg.API.Port)
-	//lis, err := net.Listen("tcp", portStr)
-	//if err != nil {
-	//	log.L().Error("API server failed to listen.", zap.Error(err))
-	//	return errors.Wrap(err, "API server failed to listen")
-	//}
-	//log.L().Info("API server is listening.", zap.String("addr", lis.Addr().String()))
-	//
-	//go func() {
-	//	if err := api.grpcserver.Serve(lis); err != nil {
-	//		log.L().Fatal("Node failed to serve.", zap.Error(err))
-	//	}
-	//}()
-	//if err := api.bc.AddSubscriber(api.chainListener); err != nil {
-	//	return errors.Wrap(err, "failed to subscribe to block creations")
-	//}
-	//if err := api.chainListener.Start(); err != nil {
-	//	return errors.Wrap(err, "failed to start blockchain listener")
-	//}
+	portStr := ":" + api.cfg.Port
+	lis, err := net.Listen("tcp", portStr)
+	if err != nil {
+		log.L().Error("API server failed to listen.", zap.Error(err))
+		return errors.Wrap(err, "API server failed to listen")
+	}
+	log.L().Info("API server is listening.", zap.String("addr", lis.Addr().String()))
+
+	go func() {
+		if err := api.grpcserver.Serve(lis); err != nil {
+			log.L().Fatal("Node failed to serve.", zap.Error(err))
+		}
+	}()
 	return nil
 }
 
 // Stop stops the API server
 func (api *Server) Stop() error {
 	api.grpcserver.Stop()
+	return nil
+}
+
+// GetDelegate returns the delegate
+func (api *Server) GetDelegate(ctx context.Context, in *iotexapi.GetDelegateRequest) (response *iotexapi.GetDelegateResponse, err error) {
+	ret, err := api.protocol.GetDelegates(core.Uint64ToInt64(in.DelegateID))
+	if err != nil {
+		return
+	}
+	delegate := &iotextypes.Delegate{
+		DelegateID: in.DelegateID,
+		Address:    ret,
+	}
+	response.Delegate = delegate
+	return
+}
+func (api *Server) UpdateDelegate(ctx context.Context, in *iotexapi.UpdateDelegateRequest) (response *iotexapi.UpdateDelegateResponse, err error) {
+	del := &core.Delegate{
+		core.Uint64ToInt64(in.Delegate.DelegateID),
+		in.Delegate.Address,
+	}
+	err = api.protocol.UpdateDelegates(del)
+	if err != nil {
+		response.Success = false
+	}
+	return
 }

@@ -9,13 +9,13 @@ package main
 import (
 	"context"
 	"io/ioutil"
-	"net/http"
 	"os"
 
 	"github.com/iotexproject/iotex-core/pkg/log"
 	"go.uber.org/zap"
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/iotexproject/high-table/api"
 	"github.com/iotexproject/high-table/config"
 	"github.com/iotexproject/high-table/core"
 )
@@ -46,24 +46,12 @@ func main() {
 		log.S().Error("delegates.CreateTables", zap.Error(err))
 		return
 	}
-	//
-	//
-	//log.S().Infof("connect to http://0.0.0.0:%s/ for GraphQL playground", cfg.Port)
-	//
-	//// Start GraphQL query service
-	//go func() {
-	//	if err := http.ListenAndServe(":"+cfg.Port, nil); err != nil {
-	//		log.L().Fatal("Failed to serve index query service", zap.Error(err))
-	//	}
-	//}()
-
+	ser, err := api.NewServer(cfg, delegates)
+	err = ser.Start()
+	if err != nil {
+		log.L().Fatal("Failed to start api server", zap.Error(err))
+		return
+	}
+	defer ser.Stop()
 	select {}
-}
-
-func graphqlHandler(playgroundHandler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "*")
-		playgroundHandler.ServeHTTP(w, r)
-	})
 }
