@@ -83,6 +83,7 @@ func (api *Server) GetDelegate(ctx context.Context, in *iotexapi.GetDelegateRequ
 		DelegateID: in.DelegateID,
 		Address:    ret,
 	}
+	response = &iotexapi.GetDelegateResponse{}
 	response.Delegate = delegate
 	return
 }
