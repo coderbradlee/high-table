@@ -10,7 +10,7 @@ syntax = "proto3";
 package api;
 option go_package = "github.com/iotexproject/high-table/proto/golang/api";
 
-import "proto/types/delegate.proto";
+import "proto/proto/types/delegate.proto";
 
 service APIService {
   rpc GetDelegate(GetDelegateRequest) returns (GetDelegateResponse) {}
