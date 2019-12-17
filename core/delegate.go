@@ -51,8 +51,6 @@ func NewProtocol(
 
 // CreateTables creates tables
 func (p *Delegates) CreateTables(ctx context.Context) error {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
 	db := p.db
 	if db == nil {
 		return errors.New("db is nil")
