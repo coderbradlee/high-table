@@ -26,13 +26,13 @@ import (
 type Server struct {
 	cfg        *config.Config
 	grpcserver *grpc.Server
-	protocol   core.Protocol
+	protocol   core.Delegates
 }
 
 // NewServer creates a new server
 func NewServer(
 	cfg *config.Config,
-	protocol core.Protocol,
+	protocol core.Delegates,
 ) (*Server, error) {
 	svr := &Server{
 		cfg:      cfg,
