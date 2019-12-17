@@ -4,14 +4,18 @@
 // permitted by law, all liability for your use of the code is disclaimed. This source code is governed by Apache
 // License 2.0 that can be found in the LICENSE file.
 
-package sql
+package config
 
-import (
-	// this is required for mysql usage
-	_ "github.com/go-sql-driver/mysql"
-)
-
-// NewMySQL instantiates a mysql
-func NewMySQL(connectStr string, dbName string) Store {
-	return newStoreBase("mysql", connectStr, dbName)
+// Config is config
+type Config struct {
+	Port   string `yaml:"port"`
+	DBPath string `yaml:"DBPath"`
 }
+
+var (
+	// DefaultCfg is the default config
+	DefaultCfg = &Config{
+		Port:   "8090",
+		DBPath: "./hightable.db",
+	}
+)

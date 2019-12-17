@@ -1,0 +1,31 @@
+// Copyright (c) 2019 IoTeX
+// This is an alpha (internal) release and is not suitable for production. This source code is provided 'as is' and no
+// warranties are given as to title or non-infringement, merchantability or fitness for purpose and, to the extent
+// permitted by law, all liability for your use of the code is disclaimed. This source code is governed by Apache
+// License 2.0 that can be found in the LICENSE file.
+
+// To compile the proto, run:
+//      protoc -I. -I ./../types --go_out=plugins=grpc:$GOPATH/src *.proto
+syntax = "proto3";
+package api;
+option go_package = "github.com/iotexproject/high-table/proto/golang/api";
+
+import "proto/proto/types/delegate.proto";
+
+service APIService {
+  rpc GetDelegate(GetDelegateRequest) returns (GetDelegateResponse) {}
+  rpc UpdateDelegate(UpdateDelegateRequest) returns (UpdateDelegateResponse) {}
+}
+
+message GetDelegateRequest {
+  uint64 delegateID = 1;
+}
+message GetDelegateResponse {
+  types.Delegate delegate=1;
+}
+message UpdateDelegateRequest {
+  types.Delegate delegate=1;
+}
+message UpdateDelegateResponse {
+  bool success = 1;
+}
