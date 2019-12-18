@@ -50,6 +50,8 @@ func NewServer(
 	svr.grpcserver = grpc.NewServer()
 	iotexapi.RegisterAPIServiceServer(svr.grpcserver, svr)
 	reflection.Register(svr.grpcserver)
+	svr.shutdown = make(chan struct{})
+	svr.interrupt = make(chan os.Signal, 1)
 	return svr, nil
 }
 
