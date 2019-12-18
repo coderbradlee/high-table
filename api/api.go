@@ -74,10 +74,10 @@ func (s *Server) Start() error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		log.L().Info("API server is listening.", zap.String("addr", lis.Addr().String()))
 		if err := s.grpcserver.Serve(lis); err != nil {
 			log.L().Fatal("Node failed to serve.", zap.Error(err))
 		}
-		log.L().Info("API server is listening.", zap.String("addr", lis.Addr().String()))
 	}()
 
 	wg.Wait()
@@ -127,6 +127,7 @@ func (s *Server) handleShutdown(wg *sync.WaitGroup, gs *grpc.Server) {
 	defer wg.Done()
 	<-s.shutdown
 	gs.Stop()
+	log.L().Info("Shut down")
 }
 
 func handleInterrupt(once *sync.Once, s *Server) {
