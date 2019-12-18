@@ -41,17 +41,13 @@ func main() {
 		return
 	}
 	delegates := core.NewProtocol(db)
-	err = delegates.CreateTables(context.Background())
-	if err != nil {
+	if err = delegates.CreateTables(context.Background()); err != nil {
 		log.S().Error("delegates.CreateTables", zap.Error(err))
 		return
 	}
 	ser, err := api.NewServer(cfg, delegates)
-	err = ser.Start()
-	if err != nil {
+	if err = ser.Start(); err != nil {
 		log.L().Fatal("Failed to start api server", zap.Error(err))
 		return
 	}
-	defer ser.Stop()
-	select {}
 }
