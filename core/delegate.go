@@ -27,6 +27,12 @@ var (
 	ErrNotExist = errors.New("not exist")
 )
 
+type Protocol interface {
+	CreateTables(context.Context) error
+	GetDelegates(int) (string, error)
+	UpdateDelegates(*Delegate) error
+}
+
 // Delegate defines the protocol of querying tables
 type Delegate struct {
 	DelegateID int    `json:"delegate_id"`
@@ -41,7 +47,7 @@ type Delegates struct {
 // NewProtocol creates a new protocol
 func NewProtocol(
 	db *sql.DB,
-) *Delegates {
+) Protocol {
 	return &Delegates{
 		db: db,
 	}
