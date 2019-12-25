@@ -15,6 +15,7 @@ import (
 	"sync/atomic"
 	"syscall"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/iotexproject/iotex-core/pkg/log"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -86,33 +87,26 @@ func (s *Server) Start() error {
 
 // GetDelegate returns the delegate
 func (api *Server) GetDelegate(ctx context.Context, in *iotexapi.GetDelegateRequest) (response *iotexapi.GetDelegateResponse, err error) {
-	ret, err := api.protocol.GetDelegates(core.Uint64ToInt64(in.DelegateID))
+	ret, err := api.protocol.Delegate(core.Uint64ToInt64(in.DelegateID))
 	if err != nil {
 		return
 	}
-	delegate := &iotextypes.Delegate{
-		DelegateID: in.DelegateID,
-		Address:    ret,
+	response = &iotexapi.GetDelegateResponse{
+		Delegate: &iotextypes.Delegate{
+			DelegateID: in.DelegateID,
+			Address:    ret,
+		},
 	}
-	response = &iotexapi.GetDelegateResponse{}
-	response.Delegate = delegate
 	return
 }
 
 // UpdateDelegate update delegate info
-func (api *Server) UpdateDelegate(ctx context.Context, in *iotexapi.UpdateDelegateRequest) (response *iotexapi.UpdateDelegateResponse, err error) {
-	response = &iotexapi.UpdateDelegateResponse{
-		Success: true,
-	}
+func (api *Server) UpdateDelegate(ctx context.Context, in *iotexapi.UpdateDelegateRequest) (*empty.Empty, error) {
 	del := &core.Delegate{
 		core.Uint64ToInt64(in.Delegate.DelegateID),
 		in.Delegate.Address,
 	}
-	err = api.protocol.UpdateDelegates(del)
-	if err != nil {
-		response.Success = false
-	}
-	return
+	return &empty.Empty{}, api.protocol.UpdateDelegate(del)
 }
 
 // Shutdown server and clean up resources

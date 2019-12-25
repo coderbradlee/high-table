@@ -29,13 +29,13 @@ var (
 
 type Protocol interface {
 	CreateTables(context.Context) error
-	GetDelegates(int) (string, error)
-	UpdateDelegates(*Delegate) error
+	Delegate(int64) (string, error)
+	UpdateDelegate(*Delegate) error
 }
 
 // Delegate defines the protocol of querying tables
 type Delegate struct {
-	DelegateID int    `json:"delegate_id"`
+	DelegateID int64  `json:"delegate_id"`
 	Address    string `json:"address"`
 }
 
@@ -63,16 +63,16 @@ func (p *Delegates) CreateTables(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 	_, err = tx.Exec(fmt.Sprintf(createDelegateTable, delegateTableName))
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
 	return tx.Commit()
 }
 
-// GetDelegates gets delegates from db
-func (p *Delegates) GetDelegates(delegateID int) (ret string, err error) {
+// Delegate gets delegate from db
+func (p *Delegates) Delegate(delegateID int64) (ret string, err error) {
 	db := p.db
 	if db == nil {
 		err = errors.New("db is nil")
@@ -84,7 +84,7 @@ func (p *Delegates) GetDelegates(delegateID int) (ret string, err error) {
 }
 
 // UpdateDelegates insert or update delegate's table
-func (p *Delegates) UpdateDelegates(delegate *Delegate) (err error) {
+func (p *Delegates) UpdateDelegate(delegate *Delegate) (err error) {
 	db := p.db
 	if db == nil {
 		err = errors.New("db is nil")
@@ -92,12 +92,11 @@ func (p *Delegates) UpdateDelegates(delegate *Delegate) (err error) {
 	}
 	tx, err := db.Begin()
 	if err != nil {
-		return err
-	}
-	_, err = tx.Exec(fmt.Sprintf(insertDelegates, delegateTableName), delegate.DelegateID, delegate.Address)
-	if err != nil {
-		return err
+		return
 	}
 	defer tx.Rollback()
+	if _, err = tx.Exec(fmt.Sprintf(insertDelegates, delegateTableName), delegate.DelegateID, delegate.Address); err != nil {
+		return
+	}
 	return tx.Commit()
 }
