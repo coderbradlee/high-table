@@ -86,16 +86,16 @@ func (s *Server) Start() error {
 
 // GetDelegate returns the delegate
 func (api *Server) GetDelegate(ctx context.Context, in *iotexapi.GetDelegateRequest) (response *iotexapi.GetDelegateResponse, err error) {
-	ret, err := api.protocol.GetDelegates(core.Uint64ToInt64(in.DelegateID))
+	ret, err := api.protocol.Delegate(core.Uint64ToInt64(in.DelegateID))
 	if err != nil {
 		return
 	}
-	delegate := &iotextypes.Delegate{
-		DelegateID: in.DelegateID,
-		Address:    ret,
+	response = &iotexapi.GetDelegateResponse{
+		Delegate: &iotextypes.Delegate{
+			DelegateID: in.DelegateID,
+			Address:    ret,
+		},
 	}
-	response = &iotexapi.GetDelegateResponse{}
-	response.Delegate = delegate
 	return
 }
 
@@ -108,7 +108,7 @@ func (api *Server) UpdateDelegate(ctx context.Context, in *iotexapi.UpdateDelega
 		core.Uint64ToInt64(in.Delegate.DelegateID),
 		in.Delegate.Address,
 	}
-	err = api.protocol.UpdateDelegates(del)
+	err = api.protocol.UpdateDelegate(del)
 	if err != nil {
 		response.Success = false
 	}

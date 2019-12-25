@@ -9,12 +9,12 @@
 syntax = "proto3";
 package api;
 option go_package = "github.com/iotexproject/high-table/proto/golang/api";
-
+import "google/protobuf/empty.proto";
 import "proto/proto/types/delegate.proto";
 
 service APIService {
   rpc GetDelegate(GetDelegateRequest) returns (GetDelegateResponse) {}
-  rpc UpdateDelegate(UpdateDelegateRequest) returns (UpdateDelegateResponse) {}
+  rpc UpdateDelegate(UpdateDelegateRequest) returns (google.protobuf.Empty) {}
 }
 
 message GetDelegateRequest {
@@ -25,7 +25,4 @@ message GetDelegateResponse {
 }
 message UpdateDelegateRequest {
   types.Delegate delegate=1;
-}
-message UpdateDelegateResponse {
-  bool success = 1;
 }
