@@ -63,11 +63,11 @@ func (p *Delegates) CreateTables(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 	_, err = tx.Exec(fmt.Sprintf(createDelegateTable, delegateTableName))
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
 	return tx.Commit()
 }
 
@@ -92,11 +92,11 @@ func (p *Delegates) UpdateDelegate(delegate *Delegate) (err error) {
 	}
 	tx, err := db.Begin()
 	if err != nil {
-		return err
-	}
-	if _, err = tx.Exec(fmt.Sprintf(insertDelegates, delegateTableName), delegate.DelegateID, delegate.Address); err != nil {
-		return err
+		return
 	}
 	defer tx.Rollback()
+	if _, err = tx.Exec(fmt.Sprintf(insertDelegates, delegateTableName), delegate.DelegateID, delegate.Address); err != nil {
+		return
+	}
 	return tx.Commit()
 }

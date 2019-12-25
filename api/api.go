@@ -102,12 +102,11 @@ func (api *Server) GetDelegate(ctx context.Context, in *iotexapi.GetDelegateRequ
 
 // UpdateDelegate update delegate info
 func (api *Server) UpdateDelegate(ctx context.Context, in *iotexapi.UpdateDelegateRequest) (*empty.Empty, error) {
-	//del := &core.Delegate{
-	//	core.Uint64ToInt64(in.Delegate.DelegateID),
-	//	in.Delegate.Address,
-	//}
-	//return &empty.Empty{}, api.protocol.UpdateDelegate(del)
-	return &empty.Empty{}, errors.New("test eror")
+	del := &core.Delegate{
+		core.Uint64ToInt64(in.Delegate.DelegateID),
+		in.Delegate.Address,
+	}
+	return &empty.Empty{}, api.protocol.UpdateDelegate(del)
 }
 
 // Shutdown server and clean up resources
