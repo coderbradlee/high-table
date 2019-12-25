@@ -106,7 +106,7 @@ func (api *Server) UpdateDelegate(ctx context.Context, in *iotexapi.UpdateDelega
 		core.Uint64ToInt64(in.Delegate.DelegateID),
 		in.Delegate.Address,
 	}
-	return nil, api.protocol.UpdateDelegate(del)
+	return &empty.Empty{}, api.protocol.UpdateDelegate(del)
 }
 
 // Shutdown server and clean up resources
